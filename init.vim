@@ -9,6 +9,7 @@ set cursorline
 set encoding=utf-8
 set showmatch
 set sw=2
+set nocompatible
 
 call plug#begin('~/.vim/plugged')
 
@@ -16,13 +17,11 @@ call plug#begin('~/.vim/plugged')
 Plug 'sheerun/vim-polyglot'
 
 " Status bar
-Plug 'maximbaz/lightline-ale'
-Plug 'itchyny/lightline.vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
 
 " Themes
-Plug 'morhetz/gruvbox'
-Plug 'shinchu/lightline-gruvbox.vim'
-
+Plug 'dikiaap/minimalist'
 
 " Tree
 Plug 'scrooloose/nerdtree'
@@ -39,6 +38,15 @@ Plug 'christoomey/vim-tmux-navigator'
 " Autocomplete 
 Plug 'sirver/ultisnips'
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+
+" coc extensions
+let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier']
+
+
+" TSX
+Plug 'ianks/vim-tsx'
+Plug 'leafgarland/typescript-vim'
+
 
 " Test
 Plug 'tyewang/vimux-jest-test'
@@ -59,14 +67,18 @@ Plug 'ctrlpvim/ctrlp.vim'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-repeat'
 
+" react
+Plug 'mlaursen/vim-react-snippets'
+
 call plug#end()
 
 
-colorscheme gruvbox
-let g:gruvbox_contrast_dark="hard"
-highlight Normal ctermbg=NONE
-set laststatus=2
-set noshowmode
+set t_Co=256
+colorscheme minimalist
+
+let g:airline_theme='minimalist'
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
 
 " Searching
 set hlsearch    " highlight matches
@@ -78,8 +90,14 @@ set smartcase   " ... unless the containg at least one capital letter
 " CONFIG PLUGS
 " ===============================================================================================
 
+" == AUTOCMD ================================ 
+" by default .ts file are not identified as typescript and .tsx files are not
+" identified as typescript react file, so add following
+au BufNewFile,BufRead *.ts setlocal filetype=typescript
+au BufNewFile,BufRead *.tsx setlocal filetype=typescript.tsx
+" == AUTOCMD END ================================
 
-autocmd VimEnter * FindFileCache .
+" autocmd VimEnter * FindFileCache .
 
 " NERD Commenter
 filetype plugin on
@@ -87,6 +105,21 @@ filetype plugin on
 let g:NERDSpaceDelims = 2
 let g:NERDCustomDelimiters={ 'javascript': { 'left': '//', 'right': '', 'leftAlt': '{/*', 'rightAlt': '*/}' } }
 
+
+" VIM-AIRLINE
+let g:airline#extensions#tabline#enabled = 1
+let g:airline_powerline_fonts = 1
+
+" CtrlP
+let g:ctrlp_working_path_mode = 0
+let g:ctrlp_map = '<c-p>'
+let g:ctrlp_cmd = 'CtrlP'
+let g:ctrlp_max_height = 20
+let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee'
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/node_modules/*,*/dist/*
+
+" javascript-libraries-syntax
+let g:used_javascript_libs = 'underscore,backbone,d3,react,jquery,vue,handlebars'
 
 
 " ===============================================================================================
