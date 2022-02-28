@@ -1,5 +1,5 @@
 set number
-set mouse=a
+set mouse=r
 set numberwidth=1
 set clipboard=unnamedplus
 syntax on
@@ -9,17 +9,30 @@ set cursorline
 set encoding=utf-8
 set showmatch
 set sw=2
+set shiftwidth=2
+set tabstop=2 softtabstop=2
+set cmdheight=2
+set mat=2
+set nojoinspaces
+set smartcase
+set noswapfile
+set autoindent
+set expandtab
+
+filetype off
+
+
 set nocompatible
 
 call plug#begin('~/.vim/plugged')
 
 " Syntax
 Plug 'sheerun/vim-polyglot'
+Plug 'thanethomson/vim-jenkinsfile'
 
 " Status bar
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-
 " Themes
 Plug 'dikiaap/minimalist'
 
@@ -36,17 +49,23 @@ Plug 'benmills/vimux'
 Plug 'christoomey/vim-tmux-navigator'
 
 " Autocomplete 
-Plug 'sirver/ultisnips'
+Plug 'honza/vim-snippets'
+
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+" Plug 'neoclide/coc.nvim', {'branch': 'master'}
 
 " coc extensions
-let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier']
+let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier', 'coc-eslint', 'coc-yaml', 'coc-deno', 'coc-cssmodules', 'coc-dot-complete', 'coc-highlight', 'coc-powershell', 'coc-python', 'coc-rome', 'coc-sh', 'coc-groovy', 'coc-snippets']
 
+" let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier', 'coc-eslint', 'coc-yaml', 'coc-styleint', 'coc-deno', 'coc-cssmodules', 'coc-dot-complete', 'coc-highlight', 'coc-nginx', 'coc-powershell', 'coc-python', 'coc-rome', 'coc-sh']
+
+
+" Javascript
+Plug 'othree/javascript-libraries-syntax.vim'
 
 " TSX
 Plug 'ianks/vim-tsx'
 Plug 'leafgarland/typescript-vim'
-
 
 " Test
 Plug 'tyewang/vimux-jest-test'
@@ -54,23 +73,22 @@ Plug 'janko-m/vim-test'
 
 " IDE
 Plug 'editorconfig/editorconfig-vim'
-Plug 'junegunn/fzf.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'easymotion/vim-easymotion'
 Plug 'mhinz/vim-signify'
 Plug 'yggdroot/indentline'
 Plug 'scrooloose/nerdcommenter'
 Plug 'ctrlpvim/ctrlp.vim'
+Plug 'frazrepo/vim-rainbow'
 
 " git
 Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-repeat'
-
-" react
-Plug 'mlaursen/vim-react-snippets'
 
 call plug#end()
+
+filetype plugin indent on    " required
 
 
 set t_Co=256
@@ -99,12 +117,26 @@ au BufNewFile,BufRead *.tsx setlocal filetype=typescript.tsx
 
 " autocmd VimEnter * FindFileCache .
 
+" NERD Tree
+let g:NERDCustomDelimiters = { 'c': { 'left': '/**', 'right': '*/'} }
+let g:NERDDefaultAlign = 'right'
+let g:NERDTreeQuitOnOpen=1
+nmap <leader>nn :NERDTreeToggle<CR>
+map <leader>r :NERDTreeFind<CR>
+
 " NERD Commenter
 filetype plugin on
+filetype plugin indent on
 
 let g:NERDSpaceDelims = 2
 let g:NERDCustomDelimiters={ 'javascript': { 'left': '//', 'right': '', 'leftAlt': '{/*', 'rightAlt': '*/}' } }
 
+" Ident Guides
+let g:indent_guides_enable_on_vim_startup = 1
+let g:indent_guides_start_level = 2
+let g:indent_guides_guide_size = 1
+let g:indent_guides_color_change_percent = 6
+let g:indent_guides_soft_pattern = ' '
 
 " VIM-AIRLINE
 let g:airline#extensions#tabline#enabled = 1
@@ -115,11 +147,49 @@ let g:ctrlp_working_path_mode = 0
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
 let g:ctrlp_max_height = 20
-let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee'
-set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/node_modules/*,*/dist/*
+let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee|build\'
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/node_modules/*,*/dist/*,*/build/*
 
 " javascript-libraries-syntax
 let g:used_javascript_libs = 'underscore,backbone,d3,react,jquery,vue,handlebars'
+
+
+" UltiSnips
+" If you want :UltiSnipsEdit to split your window.
+" let g:UltiSnipsEditSplit="vertical"
+" let g:UltiSnipsSnippetDirectories = [$HOME.'/.vim/UltiSnips']
+
+
+" coc-snippets
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? coc#_select_confirm() :
+      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+let g:coc_snippet_next = '<tab>'
+
+" =========================================
+" ========= RAINBOW ============
+" =========================================
+
+" let g:rainbow_active = 1 "set to 0 if you want to enable it later via :RainbowToggle
+let g:rainbow_active = 1
+
+let g:rainbow_active = 1
+
+let g:rainbow_load_separately = [
+    \ [ '*' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    \ [ '*.tex' , [['(', ')'], ['\[', '\]']] ],
+    \ [ '*.cpp' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    \ [ '*.{html,htm}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
+    \ [ '*.{js,jsx,ts,tsx}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
+    \ ]
 
 
 " ===============================================================================================
@@ -189,6 +259,70 @@ nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+
+
+" Remap keys for applying codeAction to the current buffer.
+nmap <leader>ac <Plug>(coc-codeaction)
+
+" Apply AutoFix to problem on the current line.
+nmap <leader>ff <Plug>(coc-fix-current)
+nmap <leader>mm :CocAction coc-fix-current<CR>
+nmap <leader>fe :CocCommand eslint.executeAutofix<CR>
+" coc - prettier
+nmap <leader>P :CocCommand prettier.formatFile<CR>
+
+
+" Use K to show documentation in preview window.
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif (coc#rpc#ready())
+    call CocActionAsync('doHover')
+  else
+    execute '!' . &keywordprg . " " . expand('<cword>')
+  endif
+endfunction 
+
+
+" Add `:Fold` command to fold current buffer.
+command! -nargs=? Fold :call CocAction('fold', <f-args>)
+
+" Mappings for CoCList
+" Show all diagnostics.
+nnoremap <silent><nowait> <space>a  :<C-u>CocList diagnostics<cr>
+" Manage extensions.
+nnoremap <silent><nowait> <space>e  :<C-u>CocList extensions<cr>
+" Show commands.
+nnoremap <silent><nowait> <space>c  :<C-u>CocList commands<cr>
+" Find symbol of current document.
+nnoremap <silent><nowait> <space>o  :<C-u>CocList outline<cr>
+" Search workspace symbols.
+nnoremap <silent><nowait> <space>s  :<C-u>CocList -I symbols<cr>
+" Do default action for next item.
+nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
+" Do default action for previous item.
+nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
+" Resume latest coc list.
+nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+
+autocmd BufNewFile,BufReadPre,BufEnter
+  \ */myproject/*.{js,jsx,ts,tsx}
+  \ call coc#config('eslint.enable', v:false)
+
+autocmd BufLeave
+  \ */myproject/*.{js,jsx,ts,tsx}
+  \ call coc#config('eslint.enable', v:true)
+
+" Delete trailing white space on save, useful for some filetypes ;)
+fun! CleanExtraSpaces()
+  let save_cursor = getpos(".")
+  let old_query = getreg('/')
+  silent! %s/\s\+$//e
+  call setpos('.', save_cursor)
+  call setreg('/', old_query)
+endfun
 
 " tab navigations
 map <Leader>h :tabprevious<cr>
