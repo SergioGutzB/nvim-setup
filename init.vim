@@ -17,9 +17,14 @@ set nojoinspaces
 set smartcase
 set noswapfile
 set autoindent
-set expandtab
+set smartindent
+set backupcopy=yes
 
-filetype off
+set guifont=Inconsolata\ Nerd\ Font\ 14
+" set guifont=DroidSansMono\ Nerd\ Font\ 11
+
+filetype on
+
 
 
 set nocompatible
@@ -29,12 +34,14 @@ call plug#begin('~/.vim/plugged')
 " Syntax
 Plug 'sheerun/vim-polyglot'
 Plug 'thanethomson/vim-jenkinsfile'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+" Themes
+Plug 'morhetz/gruvbox'
 
 " Status bar
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
-" Themes
-Plug 'dikiaap/minimalist'
 
 " Tree
 Plug 'scrooloose/nerdtree'
@@ -52,10 +59,9 @@ Plug 'christoomey/vim-tmux-navigator'
 Plug 'honza/vim-snippets'
 
 Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
-" Plug 'neoclide/coc.nvim', {'branch': 'master'}
 
 " coc extensions
-let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier', 'coc-eslint', 'coc-yaml', 'coc-deno', 'coc-cssmodules', 'coc-dot-complete', 'coc-highlight', 'coc-powershell', 'coc-python', 'coc-rome', 'coc-sh', 'coc-groovy', 'coc-snippets']
+let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier', 'coc-eslint', 'coc-yaml', 'coc-deno', 'coc-cssmodules', 'coc-powershell', 'coc-sh', 'coc-groovy', 'coc-snippets', 'coc-todolist', 'coc-clangd', 'coc-cmake', 'coc-clang-format-style-options', 'coc-docker']
 
 " let g:coc_global_extensions = ['coc-tslint-plugin', 'coc-tsserver', 'coc-emmet', 'coc-css', 'coc-html', 'coc-json', 'coc-yank', 'coc-prettier', 'coc-eslint', 'coc-yaml', 'coc-styleint', 'coc-deno', 'coc-cssmodules', 'coc-dot-complete', 'coc-highlight', 'coc-nginx', 'coc-powershell', 'coc-python', 'coc-rome', 'coc-sh']
 
@@ -81,7 +87,16 @@ Plug 'mhinz/vim-signify'
 Plug 'yggdroot/indentline'
 Plug 'scrooloose/nerdcommenter'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'frazrepo/vim-rainbow'
+Plug 'p00f/nvim-ts-rainbow'
+Plug 'dimercel/todo-vim'
+Plug 'ryanoasis/vim-devicons'
+Plug 'heavenshell/vim-jsdoc', {
+  \ 'for': ['javascript', 'javascript.jsx','typescript'],
+  \ 'do': 'make install'
+\}
+Plug 'bkad/camelcasemotion'
+Plug 'chiedo/vim-case-convert'
+
 
 " git
 Plug 'tpope/vim-fugitive'
@@ -89,14 +104,22 @@ Plug 'tpope/vim-fugitive'
 call plug#end()
 
 filetype plugin indent on    " required
-
+let g:vim_json_syntax_conceal = 0
 
 set t_Co=256
-colorscheme minimalist
 
-let g:airline_theme='minimalist'
+colorscheme gruvbox
+set background=dark    " Setting dark mode
+
+
+let g:airline_theme='gruvbox'
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled = 1
+
+autocmd vimenter * ++nested colorscheme gruvbox
+" autocmd vimenter * luafile lua/treesitter.lua
+
+hi Normal guibg=NONE ctermbg=NONE
 
 " Searching
 set hlsearch    " highlight matches
@@ -107,6 +130,7 @@ set smartcase   " ... unless the containg at least one capital letter
 " ===============================================================================================
 " CONFIG PLUGS
 " ===============================================================================================
+
 
 " == AUTOCMD ================================ 
 " by default .ts file are not identified as typescript and .tsx files are not
@@ -138,16 +162,32 @@ let g:indent_guides_guide_size = 1
 let g:indent_guides_color_change_percent = 6
 let g:indent_guides_soft_pattern = ' '
 
+" devicons
+let g:WebDevIconsUnicodeDecorateFolderNodes = 1
+let g:WebDevIconsNerdTreeAfterGlyphPadding = ' '
+" let g:DevIconsEnableFolderExtensionPatternMatching = 0
+
+if exists("g:loaded_webdevicons")
+    call webdevicons#refresh()
+endif
+
+if (has("termguicolors"))
+  set termguicolors
+endif
+
+
 " VIM-AIRLINE
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_powerline_fonts = 1
+let g:hybrid_custom_term_colors = 1
+let g:hybrid_reduced_contrast = 1
 
 " CtrlP
 let g:ctrlp_working_path_mode = 0
 let g:ctrlp_map = '<c-p>'
 let g:ctrlp_cmd = 'CtrlP'
 let g:ctrlp_max_height = 20
-let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee|build\'
+let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee|build\|public'
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip,*/node_modules/*,*/dist/*,*/build/*
 
 " javascript-libraries-syntax
@@ -179,17 +219,17 @@ let g:coc_snippet_next = '<tab>'
 " =========================================
 
 " let g:rainbow_active = 1 "set to 0 if you want to enable it later via :RainbowToggle
-let g:rainbow_active = 1
+" let g:rainbow_active = 1
 
-let g:rainbow_active = 1
+" let g:rainbow_active = 1
 
-let g:rainbow_load_separately = [
-    \ [ '*' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
-    \ [ '*.tex' , [['(', ')'], ['\[', '\]']] ],
-    \ [ '*.cpp' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
-    \ [ '*.{html,htm}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
-    \ [ '*.{js,jsx,ts,tsx}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
-    \ ]
+" let g:rainbow_load_separately = [
+    " \ [ '*' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    " \ [ '*.tex' , [['(', ')'], ['\[', '\]']] ],
+    " \ [ '*.cpp' , [['(', ')'], ['\[', '\]'], ['{', '}']] ],
+    " \ [ '*.{html,htm}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
+    " \ [ '*.{js,jsx,ts,tsx}' , [['(', ')'], ['\[', '\]'], ['{', '}'], ['<\a[^>]*>', '</[^>]*>']] ],
+    " \ ]
 
 
 " ===============================================================================================
@@ -206,9 +246,9 @@ nnoremap <Leader>TT: TestSuite<CR>
 
 
 " split resize
-nnoremap <Leader>> 10<C-w>>
-nnoremap <Leader>< 10<C-w><
 nnoremap <Leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
+nnoremap <silent> <Leader>+ :vertical resize +10<CR>
+nnoremap <silent> <Leader>- :vertical resize -10<CR>
 
 nnoremap <Leader>ps :Rg<SPACE>
 
@@ -217,6 +257,9 @@ inoremap <F9> <C-O>za
 nnoremap <F9> za
 onoremap <F9> <C-C>za
 vnoremap <F9> fzf
+
+" Dimercel/todo-vim
+nmap <F5> :TODOToggle<CR>
 
 " quick semi
 nnoremap <F2> :noa w  <CR><space>
@@ -227,7 +270,7 @@ nmap <leader>q :q<CR>
 
 " shorter commands
 cnoreabbrev tree NERDTreeToggle
-cnoreabbrev blame Gblame
+" cnoreabbrev blame Gblame
 cnoreabbrev find NERDTreeFind
 cnoreabbrev diff Gdiff
 
@@ -238,7 +281,7 @@ map <leader>r :NERDTreeFind<CR>
 nmap <leader>s <Plug>(easymotion-s)
 
 " vim-jsdoc
-nmap <silent> <C-l> <Plug>(jsdoc)
+nmap <leader>jd <Plug>(jsdoc)
 
 map <Up> <Nop>
 map <Down> <Nop>
@@ -251,6 +294,11 @@ nnoremap <silent> <Leader><C-j> :TmuxNavigateDown<cr>
 nnoremap <silent> <Leader><C-k> :TmuxNavigateUp<cr>
 nnoremap <silent> <Leader><C-l> :TmuxNavigateRight<cr>
 
+nnoremap <silent> <Leader><C-Left> :TmuxNavigateLeft<cr>
+nnoremap <silent> <Leader><C-Right> :TmuxNavigateRight<cr>
+nnoremap <silent> <Leader><C-Down> :TmuxNavigateDown<cr>
+nnoremap <silent> <Leader><C-Up> :TmuxNavigateUp<cr>
+
 " diagnostics
 nnoremap <Leader>kp :let @*=expand("%")<cr>
 
@@ -260,6 +308,7 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
+" nmap <silent> gb <Plug>(Gblame)
 
 " Remap keys for applying codeAction to the current buffer.
 nmap <leader>ac <Plug>(coc-codeaction)
@@ -363,5 +412,4 @@ if has('nvim')
 else
   inoremap <silent><expr> <c-@> coc#refresh()
 endif
-
 
